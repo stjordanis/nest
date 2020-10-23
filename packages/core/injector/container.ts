@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common/interfaces/injectable.interface';
 import { Type } from '@nestjs/common/interfaces/type.interface';
 import { ApplicationConfig } from '../application-config';
 import { CircularDependencyException } from '../errors/exceptions/circular-dependency.exception';
-import { InvalidModuleException } from '../errors/exceptions/invalid-module.exception';
+import { UndefinedForwardRefException } from '../errors/exceptions/undefined-forwardref.exception';
 import { UnknownModuleException } from '../errors/exceptions/unknown-module.exception';
 import { ExternalContextCreator } from '../helpers/external-context-creator';
 import { HttpAdapterHost } from '../helpers/http-adapter-host';
@@ -55,8 +55,10 @@ export class NestContainer {
     metatype: Type<any> | DynamicModule | Promise<DynamicModule>,
     scope: Type<any>[],
   ): Promise<Module> {
+    // In DependenciesScanner#scanForModules we already check for undefined or invalid modules
+    // We sill need to catch the edge-case of `forwardRef(() => undefined)`
     if (!metatype) {
-      throw new InvalidModuleException(scope);
+      throw new UndefinedForwardRefException(scope);
     }
     const { type, dynamicMetadata, token } = await this.moduleCompiler.compile(
       metatype,
@@ -64,9 +66,14 @@ export class NestContainer {
     if (this.modules.has(token)) {
       return;
     }
-    const moduleRef = new Module(type, scope, this);
+    const moduleRef = new Module(type, this);
     this.modules.set(token, moduleRef);
-    this.addDynamicMetadata(token, dynamicMetadata, [].concat(scope, type));
+
+    await this.addDynamicMetadata(
+      token,
+      dynamicMetadata,
+      [].concat(scope, type),
+    );
 
     if (this.isGlobalModule(type, dynamicMetadata)) {
       this.addGlobalModule(moduleRef);
@@ -74,7 +81,7 @@ export class NestContainer {
     return moduleRef;
   }
 
-  public addDynamicMetadata(
+  public async addDynamicMetadata(
     token: string,
     dynamicModuleMetadata: Partial<DynamicModule>,
     scope: Type<any>[],
@@ -85,14 +92,14 @@ export class NestContainer {
     this.dynamicModulesMetadata.set(token, dynamicModuleMetadata);
 
     const { imports } = dynamicModuleMetadata;
-    this.addDynamicModules(imports, scope);
+    await this.addDynamicModules(imports, scope);
   }
 
-  public addDynamicModules(modules: any[], scope: Type<any>[]) {
+  public async addDynamicModules(modules: any[], scope: Type<any>[]) {
     if (!modules) {
       return;
     }
-    modules.forEach(module => this.addModule(module, scope));
+    await Promise.all(modules.map(module => this.addModule(module, scope)));
   }
 
   public isGlobalModule(
@@ -180,11 +187,11 @@ export class NestContainer {
   }
 
   public replace(toReplace: any, options: any & { scope: any[] | null }) {
-    this.modules.forEach(module => module.replace(toReplace, options));
+    this.modules.forEach(moduleRef => moduleRef.replace(toReplace, options));
   }
 
   public bindGlobalScope() {
-    this.modules.forEach(module => this.bindGlobalsToImports(module));
+    this.modules.forEach(moduleRef => this.bindGlobalsToImports(moduleRef));
   }
 
   public bindGlobalsToImports(moduleRef: Module) {
@@ -194,7 +201,7 @@ export class NestContainer {
   }
 
   public bindGlobalModuleToModule(target: Module, globalModule: Module) {
-    if (target === globalModule) {
+    if (target === globalModule || target === this.internalCoreModule) {
       return;
     }
     target.addRelatedModule(globalModule);
@@ -203,7 +210,7 @@ export class NestContainer {
   public getDynamicMetadataByToken(
     token: string,
     metadataKey: keyof DynamicModule,
-  ): any[] {
+  ) {
     const metadata = this.dynamicModulesMetadata.get(token);
     if (metadata && metadata[metadataKey]) {
       return metadata[metadataKey] as any[];

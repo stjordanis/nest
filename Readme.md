@@ -54,9 +54,11 @@ With official support, you can get expert help straight from Nest core team. We 
 
 Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-#### Principal Sponsor
-
-<a href="https://valor-software.com/" target="_blank"><img src="https://docs.nestjs.com/assets/sponsors/valor-software.png" width="220" /></a>
+#### Principal Sponsors
+<table style="text-align:center;"><tr><td>
+<a href="https://github.com/Sanofi-IADC" target="_blank"><img src="https://docs.nestjs.com/assets/sponsors/sanofi.png" width="180" valign="middle" /></a></td><td>
+<a href="https://valor-software.com/" target="_blank"><img src="https://docs.nestjs.com/assets/sponsors/valor-software.png" width="180" valign="middle" /></a></td>
+</tr></table>
 
 #### Silver Sponsors
 
@@ -84,8 +86,11 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 <a href="https://www.codeguesser.co.uk" target="_blank"><img src="https://nestjs.com/img/codeguesser-logo.svg" width="120" valign="middle" /></a> </td><td align="center" valign="middle">
 <a href="https://tekhattan.com" target="_blank"><img src="https://nestjs.com/img/tekhattan-logo.png" width="110" valign="middle" /></a> </td><td align="center" valign="middle">
 <a href="https://f-a.nz/" target="_blank"><img src="https://nestjs.com/img/franz.svg" width="80" valign="middle" /></a> </td><td align="center" valign="middle">
-<a href="https://sparkfabrik.com/" target="_blank"><img src="https://nestjs.com/img/sparkfabrik-logo.png" width="120" valign="middle" /></a></td></tr></table>
-
+<a href="https://sparkfabrik.com/" target="_blank"><img src="https://nestjs.com/img/sparkfabrik-logo.png" width="120" valign="middle" /></a></td><td align="center" valign="middle"><a href="https://www.thebigphonestore.co.uk/" target="_blank"><img src="https://nestjs.com/img/the-big-phone-store-logo.png" width="65" valign="middle" /></a></td>
+  <td align="center" valign="middle">
+  <a href="https://genuinebee.com/" target="_blank"><img src="https://nestjs.com/img/genuinebee.svg" width="97" valign="middle" /></a> </td></tr>
+<tr><td align="center" valign="middle"><a href="https://sanyodigital.com/" target="_blank"><img src="https://nestjs.com/img/sanyo-digital.png" width="130" valign="middle" /></a></td><td align="center" valign="middle"><a href="https://vpn-review.com/vpn-for-torrenting" target="_blank"><img src="https://nestjs.com/img/vpn-review-logo.png" width="85" valign="middle" /></a></td>
+  </tr></table>
 
 ## Backers
 

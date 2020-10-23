@@ -19,6 +19,7 @@ import {
   isSymbol,
   isUndefined,
 } from '@nestjs/common/utils/shared.utils';
+import { iterate } from 'iterare';
 import { ApplicationConfig } from '../application-config';
 import { InvalidClassException } from '../errors/exceptions/invalid-class.exception';
 import { RuntimeException } from '../errors/exceptions/runtime.exception';
@@ -29,7 +30,6 @@ import { CONTROLLER_ID_KEY } from './constants';
 import { NestContainer } from './container';
 import { InstanceWrapper } from './instance-wrapper';
 import { ModuleRef } from './module-ref';
-import { iterate } from 'iterare';
 
 interface ProviderName {
   name?: string | symbol;
@@ -50,7 +50,6 @@ export class Module {
 
   constructor(
     private readonly _metatype: Type<any>,
-    private readonly _scope: Type<any>[],
     private readonly container: NestContainer,
   ) {
     this.addCoreProviders();
@@ -59,10 +58,6 @@ export class Module {
 
   get id(): string {
     return this._id;
-  }
-
-  get scope(): Type<any>[] {
-    return this._scope;
   }
 
   get providers(): Map<any, InstanceWrapper<Injectable>> {
@@ -405,9 +400,9 @@ export class Module {
       .map(({ name }) => name)
       .toArray();
 
-    if (!importsNames.includes(token as any)) {
+    if (!importsNames.includes(token as string)) {
       const { name } = this.metatype;
-      throw new UnknownExportException(token as any, name);
+      throw new UnknownExportException(token, name);
     }
     return token;
   }
@@ -484,7 +479,7 @@ export class Module {
     return [...this._providers].filter(([_, wrapper]) => !wrapper.isAlias);
   }
 
-  public createModuleReferenceType(): any {
+  public createModuleReferenceType(): Type<ModuleRef> {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
     return class extends ModuleRef {
@@ -496,10 +491,9 @@ export class Module {
         typeOrToken: Type<TInput> | string | symbol,
         options: { strict: boolean } = { strict: true },
       ): TResult {
-        if (!(options && options.strict)) {
-          return this.find<TInput, TResult>(typeOrToken);
-        }
-        return this.findInstanceByToken<TInput, TResult>(typeOrToken, self);
+        return !(options && options.strict)
+          ? this.find<TInput, TResult>(typeOrToken)
+          : this.find<TInput, TResult>(typeOrToken, self);
       }
 
       public resolve<TInput = any, TResult = TInput>(

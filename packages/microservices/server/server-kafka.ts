@@ -8,7 +8,7 @@ import {
   NO_MESSAGE_HANDLER,
 } from '../constants';
 import { KafkaContext } from '../ctx-host';
-import { KafkaHeaders } from '../enums';
+import { KafkaHeaders, Transport } from '../enums';
 import {
   Consumer,
   ConsumerConfig,
@@ -31,13 +31,16 @@ import { Server } from './server';
 let kafkaPackage: any = {};
 
 export class ServerKafka extends Server implements CustomTransportStrategy {
-  protected readonly logger = new Logger(ServerKafka.name);
+  public readonly transportId = Transport.KAFKA;
+
+  protected logger = new Logger(ServerKafka.name);
   protected client: Kafka = null;
   protected consumer: Consumer = null;
   protected producer: Producer = null;
-  private readonly brokers: string[];
-  private readonly clientId: string;
-  private readonly groupId: string;
+
+  protected brokers: string[];
+  protected clientId: string;
+  protected groupId: string;
 
   constructor(private readonly options: KafkaOptions['options']) {
     super();
@@ -115,7 +118,7 @@ export class ServerKafka extends Server implements CustomTransportStrategy {
     await consumer.run(consumerRunOptions);
   }
 
-  public getMessageHandler(): Function {
+  public getMessageHandler() {
     return async (payload: EachMessagePayload) => this.handleMessage(payload);
   }
 

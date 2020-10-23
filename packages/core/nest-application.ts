@@ -4,6 +4,7 @@ import {
   HttpServer,
   INestApplication,
   INestMicroservice,
+  NestHybridApplicationOptions,
   NestInterceptor,
   PipeTransform,
   WebSocketAdapter,
@@ -137,6 +138,7 @@ export class NestApplication extends NestApplicationContext
 
   public async init(): Promise<this> {
     this.applyOptions();
+    await this.httpAdapter?.init();
 
     const useBodyParser =
       this.appOptions && this.appOptions.bodyParser !== false;
@@ -170,17 +172,23 @@ export class NestApplication extends NestApplicationContext
     this.routesResolver.registerExceptionHandler();
   }
 
-  public connectMicroservice<T extends object>(options: T): INestMicroservice {
+  public connectMicroservice<T extends object>(
+    microserviceOptions: T,
+    hybridAppOptions: NestHybridApplicationOptions = {},
+  ): INestMicroservice {
     const { NestMicroservice } = loadPackage(
       '@nestjs/microservices',
       'NestFactory',
       () => require('@nestjs/microservices'),
     );
+    const { inheritAppConfig } = hybridAppOptions;
+    const applicationConfig = inheritAppConfig
+      ? this.config
+      : new ApplicationConfig();
 
-    const applicationConfig = new ApplicationConfig();
     const instance = new NestMicroservice(
       this.container,
-      options,
+      microserviceOptions,
       applicationConfig,
     );
     instance.registerListeners();

@@ -1,4 +1,5 @@
 import { Transport } from '../enums/transport.enum';
+import { ChannelOptions } from '../external/grpc-options.interface';
 import {
   CompressionTypes,
   ConsumerConfig,
@@ -6,6 +7,7 @@ import {
   ProducerConfig,
 } from '../external/kafka-options.interface';
 import { MqttClientOptions } from '../external/mqtt-options.interface';
+import { ClientOpts } from '../external/redis.interface';
 import { Server } from '../server/server';
 import { CustomTransportStrategy } from './custom-transport-strategy.interface';
 import { Deserializer } from './deserializer.interface';
@@ -42,6 +44,7 @@ export interface GrpcOptions {
       http2MinPingIntervalWithoutDataMs?: number;
       http2MaxPingStrikes?: number;
     };
+    channelOptions?: ChannelOptions;
     credentials?: any;
     protoPath: string | string[];
     package: string | string[];
@@ -82,7 +85,7 @@ export interface RedisOptions {
     retryDelay?: number;
     serializer?: Serializer;
     deserializer?: Deserializer;
-  };
+  } & ClientOpts;
 }
 
 export interface MqttOptions {
@@ -125,6 +128,7 @@ export interface RmqOptions {
     noAck?: boolean;
     serializer?: Serializer;
     deserializer?: Deserializer;
+    replyQueue?: string;
   };
 }
 

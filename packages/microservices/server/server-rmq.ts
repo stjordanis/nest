@@ -13,6 +13,7 @@ import {
   RQM_DEFAULT_URL,
 } from '../constants';
 import { RmqContext } from '../ctx-host';
+import { Transport } from '../enums';
 import { CustomTransportStrategy, RmqOptions } from '../interfaces';
 import {
   IncomingRequest,
@@ -23,15 +24,17 @@ import { Server } from './server';
 let rqmPackage: any = {};
 
 export class ServerRMQ extends Server implements CustomTransportStrategy {
-  private server: any = null;
-  private channel: any = null;
-  private readonly urls: string[];
-  private readonly queue: string;
-  private readonly prefetchCount: number;
-  private readonly queueOptions: any;
-  private readonly isGlobalPrefetchCount: boolean;
+  public readonly transportId = Transport.RMQ;
 
-  constructor(private readonly options: RmqOptions['options']) {
+  protected server: any = null;
+  protected channel: any = null;
+  protected readonly urls: string[];
+  protected readonly queue: string;
+  protected readonly prefetchCount: number;
+  protected readonly queueOptions: any;
+  protected readonly isGlobalPrefetchCount: boolean;
+
+  constructor(protected readonly options: RmqOptions['options']) {
     super();
     this.urls = this.getOptionsProp(this.options, 'urls') || [RQM_DEFAULT_URL];
     this.queue =
@@ -77,8 +80,9 @@ export class ServerRMQ extends Server implements CustomTransportStrategy {
         setup: (channel: any) => this.setupChannel(channel, callback),
       });
     });
-    this.server.on(DISCONNECT_EVENT, () => {
+    this.server.on(DISCONNECT_EVENT, (err: any) => {
       this.logger.error(DISCONNECTED_RMQ_MESSAGE);
+      this.logger.error(err);
     });
   }
 
